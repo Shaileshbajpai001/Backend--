@@ -13,6 +13,19 @@ dotenv.config({
 connectDB()  
 
 
+.then(()=>{
+    app.on("error",(error)=>{
+        console.log("ERROR404: ",error);
+        throw error;
+              })
+    
+    app.listen(process.env.PORT || 8000 , ()=>{`Server is running at port : ${process.env.PORT}`} )
+})
+.catch((error)=>{
+    console.log("MONGO DB CONNECTION FAILED !!!",error);
+})
+
+
 
 
 
@@ -41,7 +54,7 @@ connectDB()
 import express from "express"
 const app =express()
 
-( async()=>{   //iife function [execute imediately] using syntax
+( async()=>{                                                                                     //iife function [execute imediately] using syntax
 
     try {
         
