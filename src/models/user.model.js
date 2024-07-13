@@ -1,4 +1,5 @@
-import mongoose , {Schema} from " mongoose";
+import mongoose  from "mongoose";
+import { Schema } from "mongoose";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 
@@ -27,7 +28,7 @@ const userSchema=new Schema({
 
  avatar:{
     type:String,    // we upload from cloudnery url
-    required:true
+    
  },
  coverImage:{
     type:String     // cloudnary url
@@ -56,7 +57,7 @@ const userSchema=new Schema({
 userSchema.pre("save", async function (next) {                       // here we not use callback function because it doesn't have a refrence{like:this}
      if(!this.isModified("password"))  return next();
      
-    this.password = bcrypt.hash(this.password,10)
+    this.password = await bcrypt.hash(this.password,10)
     next()
 })
 

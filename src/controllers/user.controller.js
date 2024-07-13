@@ -2,7 +2,11 @@ import { asyncHandler } from "../utils/asynchandler.js";
 import {ApiError} from "../utils/Apierror.js"
 import { User } from "../models/user.model.js"
 import {uploadOnCloudinary} from  "../utils/cloudinary.js"
-import { Apiresponse } from "../utils/Apiresponse.js";
+
+import {Apiresponse} from "../utils/Apiresponse.js";
+
+
+
 
 const registerUser = asyncHandler( async (req,res)=> {  
     // get user detail from frontend
@@ -15,12 +19,16 @@ const registerUser = asyncHandler( async (req,res)=> {
     // check for user creation
     // return response
 
-      const { fullName , email, username ,password} = req.body
-      console.log("email : " ,email);
+      const { fullName , email, username ,password,} = req.body
 
-    //   if(fullName === ""){
-    //     throw new ApiError(400 ,"fullName is required")                    //beginer's method
-    //   }'
+      // console.log(req.body);
+
+      
+      // console.log("email : " ,email);
+
+      //   if(fullName === ""){
+      //     throw new ApiError(400 ,"fullName is required")                    //beginer's method
+      //   }'
 
     if([fullName,email,username,password].some((field)=> 
     field?.trim() === "" )
@@ -30,7 +38,7 @@ const registerUser = asyncHandler( async (req,res)=> {
 
      //
      
-     User.findOne({
+     const existedUser = await User.findOne({
         $or: [{username},{email}]
      })
 
@@ -38,27 +46,37 @@ const registerUser = asyncHandler( async (req,res)=> {
         throw new ApiError(409 ,"User or email already registered")
      }
 
+   //   console.log(req.files);
      
-     const avatarLocalPath = req.files?.avatar[0]?.path;
-     const coverImageLocalPath  = req.files?.coverImage[0]?.path;
+        const avatarLocalPath = req.files?.avatar[0]?.path;
+    //  const coverImageLocalPath  = req.files?.coverImage[0]?.path;
+
+      let coverImageLocalPath; 
+      if (req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length >0){
+        coverImageLocalPath = req.files.coverImage[0].path
+      }
+
+
 
      if (!avatarLocalPath) {
         throw new ApiError(400, "Avatar files is required")
      }
-     const avatar = await uploadOnCloudinary(avatarLocalPath)        /// files upload hone mein time lagega thatswhy await here and async in starting  of code
-     const coverImage = await uploadOnCloudinary(coverImageLocalPath)        /// files upload hone mein time lagega thatswhy await here and async in starting  of code
+
+
+     const avatar = await uploadOnCloudinary(avatarLocalPath) ;                   /// files upload hone mein time lagega thatswhy await here and async in starting  of code
+     const coverImage = await uploadOnCloudinary(coverImageLocalPath) ;           /// files upload hone mein time lagega thatswhy await here and async in starting  of code
 
 if(!avatar){
-        throw new ApiError(400, "Avatar files is required")
+        throw new ApiError(400, "Avatar file is required")
         }
 
 
-
+        // 
         // entry in database
-    const user = await User.create({
-       fullName,
-       avatar: avatar.url ,
-       coverImage : coverImage?.url || ""  ,    /// if coverImage not found than ""
+       const user = await User.create({
+       fullName, 
+       avatar: avatar.url || "" ,                 /// // [here is one  problem earliar url field is not found here but then it has been fetched, (i have something in cloudinary file because url field there had recieved earliar than this file.) ]
+       coverImage : coverImage.url || ""  ,       /// // if coverImage not found than ""
        email,
        password,
        username: username.toLowerCase()
@@ -76,9 +94,11 @@ if(!avatar){
 
     return res.status(201).json(
 
-     new Apiresponse(200, createdUser,"user registered successfully")
+     new Apiresponse(200,createdUser,"successfullly user has been connected")
 
     )
+
+
 
 
 
